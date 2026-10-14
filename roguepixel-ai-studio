@@ -1,0 +1,38 @@
+name: RoguePixel AI Studio
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 12 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate video plan
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python main.py
+
+      - name: Save generated plan
+        run: |
+          git config user.name "RoguePixel AI"
+          git config user.email "actions@users.noreply.github.com"
+          git add output/
+          git diff --cached --quiet || git commit -m "Generate video plan"
+          git push
